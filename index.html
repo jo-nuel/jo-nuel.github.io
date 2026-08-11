@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jonathan — Computing Science, UTS</title>
+<meta name="description" content="Jonathan is a final-year Computing Science (Honours) student at UTS building backend systems: Django platforms, agent orchestration, and billing engines. Open to internships through 2027.">
+<meta property="og:title" content="Jonathan — Computing Science, UTS">
+<meta property="og:description" content="Backend-focused portfolio: Django platforms, agent orchestration, and billing engines, built by a final-year Computing Science student at UTS.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: #0C1F16;
+    color: #F2EDE3;
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  * { box-sizing: border-box; }
+  a { color: #F2EDE3; text-decoration: none; }
+  ul { margin: 0; padding: 0; list-style: none; }
+  :focus-visible { outline: 2px solid #C9A96A; outline-offset: 4px; }
+  ::selection { background: #C9A96A; color: #071409; }
+
+  /* ---------- layout ---------- */
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); }
+
+  /* ---------- header ---------- */
+  .site-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    background: rgba(12, 31, 22, 0.86);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #1F3A2A;
+  }
+  .site-header .wrap {
+    height: 64px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  }
+  .logo {
+    font-family: 'Bodoni Moda', serif;
+    font-size: 19px;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .logo .dot { color: #C9A96A; }
+  .nav { display: flex; gap: clamp(18px, 3vw, 36px); align-items: center; }
+  .nav-link {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em;
+    color: #B9B5A8; padding: 4px 0;
+    border-bottom: 1px solid transparent;
+    transition: color 150ms ease, border-color 150ms ease;
+  }
+  .nav-link:hover, .nav-link:focus-visible { color: #F2EDE3; border-color: #C9A96A; }
+
+  /* ---------- hero ---------- */
+  .hero { padding: clamp(140px, 20vh, 220px) 0 clamp(72px, 10vh, 120px); }
+  .eyebrow {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #B9B5A8;
+    opacity: 0; animation: fadeUp 700ms cubic-bezier(.22,.61,.36,1) 120ms forwards;
+  }
+  .hero-title {
+    font-family: 'Bodoni Moda', serif; font-weight: 400;
+    font-size: clamp(40px, 7.2vw, 98px); line-height: 1.04; letter-spacing: -0.025em;
+    margin: clamp(26px, 4vw, 44px) 0 0; max-width: 15ch; text-wrap: pretty;
+  }
+  .word { display: inline-block; overflow: hidden; vertical-align: bottom; }
+  .wipe { display: inline-block; transform: translateY(105%); animation: wordWipe 900ms cubic-bezier(.16,.84,.32,1) forwards; }
+  .word:nth-child(1) .wipe { animation-delay: 260ms; }
+  .word:nth-child(2) .wipe { animation-delay: 330ms; }
+  .word:nth-child(3) .wipe { animation-delay: 400ms; }
+  .word:nth-child(4) .wipe { animation-delay: 470ms; }
+  .word:nth-child(5) .wipe { animation-delay: 540ms; }
+  .word:nth-child(6) .wipe { animation-delay: 610ms; }
+  .word:nth-child(7) .wipe { animation-delay: 680ms; }
+  .hero-rule {
+    height: 1px; background: #C9A96A; margin: clamp(32px, 4vw, 52px) 0 0;
+    transform-origin: left center; transform: scaleX(0);
+    animation: ruleDraw 1100ms cubic-bezier(.22,.61,.36,1) 1150ms forwards;
+  }
+  .hero-lede {
+    font-size: clamp(16px, 1.35vw, 18px); line-height: 1.7; color: #B9B5A8;
+    max-width: 62ch; margin: clamp(28px, 3.5vw, 40px) 0 0;
+    opacity: 0; animation: fadeUp 800ms cubic-bezier(.22,.61,.36,1) 1300ms forwards;
+  }
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: clamp(24px, 4vw, 64px);
+    margin-top: clamp(40px, 5vw, 64px); padding-top: 24px; border-top: 1px solid #1F3A2A;
+    opacity: 0; animation: fadeUp 800ms cubic-bezier(.22,.61,.36,1) 1420ms forwards;
+  }
+  .meta-item { display: flex; flex-direction: column; gap: 8px; }
+  .meta-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #B9B5A8; }
+  .meta-value { font-size: 14px; color: #F2EDE3; }
+
+  @keyframes wordWipe { from { transform: translateY(105%); } to { transform: translateY(0); } }
+  @keyframes ruleDraw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---------- section heading ---------- */
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+    padding-bottom: 28px; border-bottom: 1px solid #1F3A2A;
+  }
+  .section-title {
+    font-family: 'Bodoni Moda', serif; font-weight: 400;
+    font-size: clamp(28px, 3.6vw, 44px); letter-spacing: -0.02em; margin: 0; color: #F2EDE3;
+  }
+  .section-count { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #B9B5A8; white-space: nowrap; }
+  section[id] { scroll-margin-top: 64px; }
+  #work { padding: clamp(72px, 10vh, 120px) 0 0; }
+  #stack, #about { padding: clamp(88px, 12vh, 140px) 0 0; }
+  #stack .section-title, #about .section-title { margin: 0 0 28px; }
+  #contact { padding: clamp(88px, 12vh, 140px) 0 clamp(88px, 12vh, 140px); }
+
+  /* ---------- project cards ---------- */
+  .project-card {
+    border-bottom: 1px solid #1F3A2A;
+    transition: background 400ms ease;
+  }
+  .project-card:hover, .project-card:focus-within { background: #12291D; }
+  .project-inner {
+    display: flex; gap: clamp(18px, 3vw, 48px);
+    padding: clamp(32px, 4vw, 52px) clamp(16px, 2vw, 28px);
+    position: relative; flex-wrap: wrap;
+  }
+  .project-rule {
+    position: absolute; left: 0;
+    top: clamp(32px, 4vw, 52px); bottom: clamp(32px, 4vw, 52px);
+    width: 1px; background: #C9A96A;
+    transform: scaleY(0); transform-origin: top;
+    transition: transform 400ms cubic-bezier(.22,.61,.36,1);
+  }
+  .project-card:hover .project-rule, .project-card:focus-within .project-rule { transform: scaleY(1); }
+  .project-index { flex: 0 0 auto; width: 64px; font-size: 11px; letter-spacing: 0.12em; color: #B9B5A8; padding-top: 6px; }
+  .project-body { flex: 1 1 420px; min-width: 0; }
+  .status-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #B9B5A8; margin-bottom: 14px; }
+  .status-tag--live { color: #C9A96A; }
+  .project-title {
+    font-family: 'Bodoni Moda', serif; font-weight: 400;
+    font-size: clamp(24px, 2.6vw, 34px); letter-spacing: -0.015em; margin: 0; color: #F2EDE3;
+    transition: transform 400ms cubic-bezier(.22,.61,.36,1);
+  }
+  .project-card:hover .project-title, .project-card:focus-within .project-title { transform: translateX(4px); }
+  .project-desc { font-size: 15px; line-height: 1.7; color: #B9B5A8; margin: 16px 0 0; max-width: 58ch; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .tag {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #B9B5A8;
+    border: 1px solid #1F3A2A; padding: 6px 10px;
+  }
+  .project-side { flex: 0 0 auto; width: 200px; display: flex; flex-direction: column; gap: 18px; padding-top: 2px; }
+  .side-block { display: flex; flex-direction: column; gap: 7px; }
+  .side-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #B9B5A8; }
+  .side-value { font-size: 14px; color: #F2EDE3; }
+  .side-value--muted { color: #B9B5A8; line-height: 1.6; }
+  .card-link {
+    font-size: 14px; color: #F2EDE3; width: fit-content;
+    border-bottom: 1px solid #1F3A2A; padding-bottom: 2px;
+    transition: border-color 200ms ease;
+  }
+  .card-link:hover, .card-link:focus-visible { border-color: #C9A96A; }
+
+  /* ---------- stack ---------- */
+  .stack-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    border-top: 1px solid #1F3A2A; border-left: 1px solid #1F3A2A;
+  }
+  .stack-col { border-right: 1px solid #1F3A2A; border-bottom: 1px solid #1F3A2A; padding: clamp(24px, 3vw, 36px); }
+  .stack-col-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #B9B5A8; margin-bottom: 20px; }
+  .stack-list { display: flex; flex-direction: column; gap: 11px; font-size: 15px; color: #F2EDE3; }
+
+  /* ---------- about ---------- */
+  .about-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: clamp(32px, 5vw, 72px);
+    border-top: 1px solid #1F3A2A; padding-top: clamp(32px, 4vw, 44px);
+  }
+  .about-copy { display: flex; flex-direction: column; gap: 20px; max-width: 56ch; }
+  .about-copy p { font-size: 16px; line-height: 1.75; color: #B9B5A8; margin: 0; }
+  .about-panel { background: #12291D; border: 1px solid #1F3A2A; padding: clamp(24px, 3vw, 34px); height: fit-content; }
+  .panel-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #B9B5A8;
+    padding-bottom: 18px; border-bottom: 1px solid #1F3A2A;
+  }
+  .details dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0; }
+  .details dt {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #B9B5A8;
+    padding: 16px 24px 16px 0; border-bottom: 1px solid #1F3A2A;
+  }
+  .details dd {
+    font-size: 14px; color: #F2EDE3; margin: 0; padding: 16px 0;
+    border-bottom: 1px solid #1F3A2A; text-align: right;
+  }
+  .details dt:last-of-type, .details dd:last-of-type { border-bottom: none; }
+
+  /* ---------- contact ---------- */
+  .contact-title {
+    font-family: 'Bodoni Moda', serif; font-weight: 400;
+    font-size: clamp(32px, 5.4vw, 72px); line-height: 1.1; letter-spacing: -0.025em;
+    margin: 0; color: #F2EDE3; max-width: 18ch; text-wrap: pretty;
+  }
+  .contact-links {
+    display: flex; flex-wrap: wrap; gap: clamp(20px, 4vw, 48px);
+    margin-top: clamp(36px, 5vw, 56px); padding-top: 28px; border-top: 1px solid #1F3A2A;
+  }
+  .contact-link {
+    font-size: 15px; color: #F2EDE3; border-bottom: 1px solid #1F3A2A; padding-bottom: 3px;
+    transition: border-color 200ms ease;
+  }
+  .contact-link:hover, .contact-link:focus-visible { border-color: #C9A96A; }
+
+  /* ---------- footer ---------- */
+  .site-footer { background: #071409; border-top: 1px solid #1F3A2A; }
+  .site-footer .wrap {
+    padding: 32px clamp(20px, 4vw, 48px);
+    display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center;
+  }
+  .footer-text { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #B9B5A8; }
+
+  /* ---------- scroll reveal ---------- */
+  .reveal {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 700ms cubic-bezier(.22,.61,.36,1), transform 700ms cubic-bezier(.22,.61,.36,1);
+  }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 760px) {
+    .nav { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .project-card:hover .project-title, .project-card:focus-within .project-title { transform: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .wipe { transform: none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a href="#top" class="logo">Jonathan<span class="dot">.</span></a>
+      <nav class="nav">
+        <a href="#work" class="nav-link">Work</a>
+        <a href="#stack" class="nav-link">Stack</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top" class="wrap">
+
+    <section class="hero">
+      <div class="eyebrow">Sydney, Australia / Available for internships</div>
+
+      <h1 class="hero-title">
+        <span class="word"><span class="wipe">I&nbsp;</span></span><span class="word"><span class="wipe">build&nbsp;</span></span><span class="word"><span class="wipe">the&nbsp;</span></span><span class="word"><span class="wipe">systems&nbsp;</span></span><span class="word"><span class="wipe">businesses&nbsp;</span></span><span class="word"><span class="wipe">run&nbsp;</span></span><span class="word"><span class="wipe">on.</span></span>
+      </h1>
+
+      <div class="hero-rule"></div>
+
+      <p class="hero-lede">
+        Final-year Computing Science (Honours) student at UTS, majoring in Enterprise Software Development. My work sits on the backend: Django platforms, agent orchestration, and billing engines that have to be right the first time.
+      </p>
+
+      <div class="hero-meta">
+        <div class="meta-item">
+          <span class="meta-label">Focus</span>
+          <span class="meta-value">Backend and systems</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Graduating</span>
+          <span class="meta-value">May 2027</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Currently</span>
+          <span class="meta-value">Building the CAWC NSW platform</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="work">
+      <div class="section-head" data-reveal>
+        <h2 class="section-title">Selected work</h2>
+        <span class="section-count">Four projects</span>
+      </div>
+
+      <article class="project-card" data-reveal>
+        <div class="project-inner">
+          <span class="project-rule"></span>
+          <div class="project-index">01</div>
+          <div class="project-body">
+            <div class="status-tag status-tag--live">Live</div>
+            <h3 class="project-title">CAWC NSW Website Redesign</h3>
+            <p class="project-desc">Led the redesign of the Cambodian Australian Welfare Council of NSW site. It grew out of a seven-person Scrum project into a deployed CMS platform with a full solution architecture document.</p>
+            <div class="tag-list">
+              <span class="tag">Django 6</span>
+              <span class="tag">Wagtail CMS</span>
+              <span class="tag">PostgreSQL</span>
+              <span class="tag">Stripe Checkout</span>
+              <span class="tag">Docker</span>
+              <span class="tag">Railway</span>
+            </div>
+          </div>
+          <div class="project-side">
+            <div class="side-block">
+              <span class="side-label">Role</span>
+              <span class="side-value">Lead developer, team of seven</span>
+            </div>
+            <div class="side-block">
+              <span class="side-label">Links</span>
+              <a href="#" class="card-link">Live site</a>
+              <a href="#" class="card-link">Public repository</a>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="project-card" data-reveal>
+        <div class="project-inner">
+          <span class="project-rule"></span>
+          <div class="project-index">02</div>
+          <div class="project-body">
+            <div class="status-tag">In progress</div>
+            <h3 class="project-title">AI Software Factory</h3>
+            <p class="project-desc">An agent orchestration system that takes a ticket through triage, implementation, testing, and pull request. Model routing sends each stage to the model best suited to it.</p>
+            <div class="tag-list">
+              <span class="tag">Python</span>
+              <span class="tag">Agent orchestration</span>
+              <span class="tag">Multi-model routing</span>
+            </div>
+          </div>
+          <div class="project-side">
+            <div class="side-block">
+              <span class="side-label">Role</span>
+              <span class="side-value">Solo build, team of one</span>
+            </div>
+            <div class="side-block">
+              <span class="side-label">Access</span>
+              <span class="side-value side-value--muted">Private repository, case study on request</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="project-card" data-reveal>
+        <div class="project-inner">
+          <span class="project-rule"></span>
+          <div class="project-index">03</div>
+          <div class="project-body">
+            <div class="status-tag">Deployed</div>
+            <h3 class="project-title">SettleUp</h3>
+            <p class="project-desc">A vertical SaaS billing engine that meters variable usage for Australian service businesses. Started at a hackathon with one teammate and still in active development.</p>
+            <div class="tag-list">
+              <span class="tag">Django</span>
+              <span class="tag">Django REST Framework</span>
+              <span class="tag">Railway</span>
+            </div>
+          </div>
+          <div class="project-side">
+            <div class="side-block">
+              <span class="side-label">Role</span>
+              <span class="side-value">Backend owner, team of two</span>
+            </div>
+            <div class="side-block">
+              <span class="side-label">Access</span>
+              <span class="side-value side-value--muted">Private repository, case study on request</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="project-card" data-reveal>
+        <div class="project-inner">
+          <span class="project-rule"></span>
+          <div class="project-index">04</div>
+          <div class="project-body">
+            <div class="status-tag">In planning</div>
+            <h3 class="project-title">Property Listing Automation</h3>
+            <p class="project-desc">A mobile system for Jakarta property agents covering listing intake through lead follow-up. The workflow is designed around a licensed AI video editor for listing media.</p>
+            <div class="tag-list">
+              <span class="tag">PRD</span>
+              <span class="tag">Workflow design</span>
+              <span class="tag">Mobile</span>
+            </div>
+          </div>
+          <div class="project-side">
+            <div class="side-block">
+              <span class="side-label">Role</span>
+              <span class="side-value">Product and systems design, team of one</span>
+            </div>
+            <div class="side-block">
+              <span class="side-label">Access</span>
+              <span class="side-value side-value--muted">Private repository, case study on request</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section id="stack">
+      <h2 class="section-title">Stack</h2>
+      <div class="stack-grid" data-reveal>
+        <div class="stack-col">
+          <div class="stack-col-title">Backend</div>
+          <ul class="stack-list">
+            <li>Python</li><li>Django</li><li>Django REST Framework</li><li>Wagtail CMS</li><li>Stripe</li>
+          </ul>
+        </div>
+        <div class="stack-col">
+          <div class="stack-col-title">Data</div>
+          <ul class="stack-list">
+            <li>PostgreSQL</li><li>SQL and schema design</li><li>Redis</li><li>Data modelling</li>
+          </ul>
+        </div>
+        <div class="stack-col">
+          <div class="stack-col-title">AI and agents</div>
+          <ul class="stack-list">
+            <li>Agent orchestration</li><li>Multi-model routing</li><li>Prompt and tool design</li><li>Evaluation harnesses</li>
+          </ul>
+        </div>
+        <div class="stack-col">
+          <div class="stack-col-title">Infrastructure</div>
+          <ul class="stack-list">
+            <li>Docker</li><li>Railway</li><li>CI and CD pipelines</li><li>Solution architecture</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="about">
+      <h2 class="section-title">About</h2>
+      <div class="about-grid" data-reveal>
+        <div class="about-copy">
+          <p>I am in my final year of Computing Science (Honours) at UTS, majoring in Enterprise Software Development. Most of what I build is the part users never see: data models, billing logic, deployment pipelines, and the architecture documents that keep a team pointed the same way.</p>
+          <p>I work best on systems with real constraints and real users. I am looking for a tech internship where the backend matters and where I can be handed something load bearing.</p>
+        </div>
+        <div class="about-panel details">
+          <div class="panel-label">Details</div>
+          <dl>
+            <dt>Location</dt>
+            <dd>Sydney, Australia</dd>
+            <dt>Degree</dt>
+            <dd>Computing Science, Honours</dd>
+            <dt>Major</dt>
+            <dd>Enterprise Software Development</dd>
+            <dt>Graduation</dt>
+            <dd>May 2027</dd>
+            <dt>Seeking</dt>
+            <dd>Backend and platform internships</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div data-reveal>
+        <h2 class="contact-title">Open to internships from now through 2027.</h2>
+        <div class="contact-links">
+          <a href="mailto:jonathan.immanuel101@gmail.com" class="contact-link">jonathan.immanuel101@gmail.com</a>
+          <a href="https://github.com/jo-nuel" class="contact-link" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://www.linkedin.com/in/jonathan-immanuel-6601702bb" class="contact-link" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="#" class="contact-link">Resume</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span class="footer-text">Jonathan / Sydney</span>
+      <span class="footer-text">Last updated August 2026</span>
+    </div>
+  </footer>
+
+<script>
+(function () {
+  var items = document.querySelectorAll('[data-reveal]');
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (reduceMotion || !('IntersectionObserver' in window)) {
+    items.forEach(function (el) { el.classList.add('is-visible'); });
+    return;
+  }
+
+  items.forEach(function (el) {
+    el.classList.add('reveal');
+    var siblings = el.parentElement
+      ? Array.prototype.filter.call(el.parentElement.children, function (c) { return c.hasAttribute('data-reveal'); })
+      : [el];
+    var index = siblings.indexOf(el);
+    el.style.transitionDelay = (Math.max(0, index) % 6) * 80 + 'ms';
+  });
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+
+  items.forEach(function (el) { observer.observe(el); });
+})();
+</script>
+</body>
+</html>
