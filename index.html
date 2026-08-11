@@ -46,8 +46,17 @@
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   ::selection { background: var(--accent); color: var(--bg-deep); }
 
+  /* ---------- ambient cursor glow ---------- */
+  .cursor-glow {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(440px circle at var(--mx, 50%) var(--my, 20%), rgba(var(--accent-rgb), 0.14), transparent 70%);
+    opacity: 0; transition: opacity 500ms ease;
+    mix-blend-mode: screen;
+  }
+  .cursor-glow.is-active { opacity: 1; }
+
   /* ---------- layout ---------- */
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); position: relative; z-index: 2; }
 
   /* ---------- header ---------- */
   .site-header {
@@ -79,7 +88,8 @@
     font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
     color: var(--ink-muted); padding: 4px 0;
     border-bottom: 1px solid transparent;
-    transition: color 150ms ease, border-color 150ms ease;
+    display: inline-block;
+    transition: color 150ms ease, border-color 150ms ease, transform 150ms ease;
   }
   .nav-link:hover, .nav-link:focus-visible { color: var(--ink); border-color: var(--accent); }
 
@@ -134,6 +144,10 @@
     0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.55); }
     50% { box-shadow: 0 0 0 5px rgba(var(--accent-rgb), 0); }
   }
+
+  /* ---------- section bands ---------- */
+  .band--surface { background: var(--surface); }
+  .band--deep { background: var(--bg-deep); }
 
   /* ---------- section heading ---------- */
   .section-head {
@@ -208,7 +222,8 @@
   .card-link {
     font-size: 14px; font-weight: 500; color: var(--ink); width: fit-content;
     border-bottom: 1px solid var(--line); padding-bottom: 2px;
-    transition: border-color 200ms ease;
+    display: inline-block;
+    transition: border-color 200ms ease, transform 150ms ease;
   }
   .card-link:hover, .card-link:focus-visible { border-color: var(--accent); }
 
@@ -236,7 +251,7 @@
   .about-copy { display: flex; flex-direction: column; gap: 20px; max-width: 56ch; }
   .about-copy p { font-size: 16px; line-height: 1.75; color: var(--ink-muted); margin: 0; }
   .about-panel {
-    background: var(--surface); border: 1px solid var(--line); padding: clamp(24px, 3vw, 34px); height: fit-content;
+    background: var(--bg); border: 1px solid var(--line); padding: clamp(24px, 3vw, 34px); height: fit-content;
     box-shadow: inset 0 1px 0 rgba(246, 248, 244, 0.05);
   }
   .panel-label {
@@ -268,7 +283,8 @@
   }
   .contact-link {
     font-size: 15px; font-weight: 500; color: var(--ink); border-bottom: 1px solid var(--line); padding-bottom: 3px;
-    transition: border-color 200ms ease;
+    display: inline-block;
+    transition: border-color 200ms ease, transform 150ms ease;
   }
   .contact-link:hover, .contact-link:focus-visible { border-color: var(--accent); }
 
@@ -283,6 +299,30 @@
     font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted);
   }
 
+  /* ---------- live status ---------- */
+  .live-status {
+    position: fixed; left: 20px; bottom: 20px; z-index: 40;
+    display: flex; align-items: center; gap: 9px;
+    padding: 10px 14px;
+    background: rgba(18, 38, 27, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-family: var(--font-body); font-weight: 600;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted);
+    transition: opacity 300ms ease;
+  }
+  .live-status[hidden] { display: none; }
+  .live-status.is-dimmed { opacity: 0; pointer-events: none; }
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex: 0 0 auto;
+    background: var(--accent);
+    animation: pulseDot 2.6s ease-in-out infinite;
+  }
+  @media (max-width: 640px) {
+    .live-status { left: 16px; bottom: 16px; padding: 8px 12px; font-size: 10px; }
+  }
+
   /* ---------- scroll reveal ---------- */
   .reveal {
     opacity: 0; transform: translateY(24px);
@@ -294,16 +334,23 @@
     .nav { display: none; }
   }
 
+  @media (hover: none), (pointer: coarse) {
+    .cursor-glow { display: none; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after { animation: none !important; transition: none !important; }
     .project-card:hover .project-title, .project-card:focus-within .project-title { transform: none !important; }
     .reveal { opacity: 1 !important; transform: none !important; }
     .wipe { transform: none !important; }
+    .cursor-glow { display: none; }
   }
 </style>
 </head>
 <body>
+
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
   <header class="site-header">
     <div class="wrap">
@@ -312,227 +359,237 @@
         Jonathan<span class="dot">.</span>
       </a>
       <nav class="nav">
-        <a href="#work" class="nav-link">Work</a>
-        <a href="#stack" class="nav-link">Stack</a>
-        <a href="#about" class="nav-link">About</a>
-        <a href="#contact" class="nav-link">Contact</a>
+        <a href="#work" class="nav-link magnetic">Work</a>
+        <a href="#stack" class="nav-link magnetic">Stack</a>
+        <a href="#about" class="nav-link magnetic">About</a>
+        <a href="#contact" class="nav-link magnetic">Contact</a>
       </nav>
     </div>
   </header>
 
-  <main id="top" class="wrap">
+  <main id="top">
 
     <section class="hero">
-      <div class="eyebrow">Sydney, Australia / Available for internships</div>
+      <div class="wrap">
+        <div class="eyebrow">Sydney, Australia / Available for internships</div>
 
-      <h1 class="hero-title">
-        <span class="word"><span class="wipe">I&nbsp;</span></span><span class="word"><span class="wipe">build&nbsp;</span></span><span class="word"><span class="wipe">the&nbsp;</span></span><span class="word"><span class="wipe">systems&nbsp;</span></span><span class="word"><span class="wipe">businesses&nbsp;</span></span><span class="word"><span class="wipe accent">run&nbsp;</span></span><span class="word"><span class="wipe accent">on.</span></span>
-      </h1>
+        <h1 class="hero-title">
+          <span class="word"><span class="wipe">I&nbsp;</span></span><span class="word"><span class="wipe">build&nbsp;</span></span><span class="word"><span class="wipe">the&nbsp;</span></span><span class="word"><span class="wipe">systems&nbsp;</span></span><span class="word"><span class="wipe">businesses&nbsp;</span></span><span class="word"><span class="wipe accent">run&nbsp;</span></span><span class="word"><span class="wipe accent">on.</span></span>
+        </h1>
 
-      <div class="hero-rule"></div>
+        <div class="hero-rule"></div>
 
-      <p class="hero-lede">
-        Final-year Computing Science (Honours) student at UTS, majoring in Enterprise Software Development. My work sits on the backend: Django platforms, agent orchestration, and billing engines that have to be right the first time.
-      </p>
+        <p class="hero-lede">
+          Final-year Computing Science (Honours) student at UTS, majoring in Enterprise Software Development. My work sits on the backend: Django platforms, agent orchestration, and billing engines that have to be right the first time.
+        </p>
 
-      <div class="hero-meta">
-        <div class="meta-item">
-          <span class="meta-label">Focus</span>
-          <span class="meta-value">Backend and systems</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">Graduating</span>
-          <span class="meta-value">May 2027</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">Currently</span>
-          <span class="meta-value">Building the CAWC NSW platform</span>
+        <div class="hero-meta">
+          <div class="meta-item">
+            <span class="meta-label">Focus</span>
+            <span class="meta-value">Backend and systems</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Graduating</span>
+            <span class="meta-value">May 2027</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Currently</span>
+            <span class="meta-value">Building the CAWC NSW platform</span>
+          </div>
         </div>
       </div>
     </section>
 
     <section id="work">
-      <div class="section-head" data-reveal>
-        <h2 class="section-title">Selected work</h2>
-        <span class="section-count">Four projects</span>
+      <div class="wrap">
+        <div class="section-head" data-reveal>
+          <h2 class="section-title">Selected work</h2>
+          <span class="section-count">Four projects</span>
+        </div>
+
+        <article class="project-card" data-reveal>
+          <div class="project-inner">
+            <span class="project-rule"></span>
+            <div class="project-index">01</div>
+            <div class="project-body">
+              <div class="status-tag status-tag--live">Live</div>
+              <h3 class="project-title">CAWC NSW Website Redesign</h3>
+              <p class="project-desc">Led the redesign of the Cambodian Australian Welfare Council of NSW site. It grew out of a seven-person Scrum project into a deployed CMS platform with a full solution architecture document.</p>
+              <div class="tag-list">
+                <span class="tag">Django 6</span>
+                <span class="tag">Wagtail CMS</span>
+                <span class="tag">PostgreSQL</span>
+                <span class="tag">Stripe Checkout</span>
+                <span class="tag">Docker</span>
+                <span class="tag">Railway</span>
+              </div>
+            </div>
+            <div class="project-side">
+              <div class="side-block">
+                <span class="side-label">Role</span>
+                <span class="side-value">Lead developer, team of seven</span>
+              </div>
+              <div class="side-block">
+                <span class="side-label">Links</span>
+                <a href="#" class="card-link magnetic">Live site</a>
+                <a href="#" class="card-link magnetic">Public repository</a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="project-card" data-reveal>
+          <div class="project-inner">
+            <span class="project-rule"></span>
+            <div class="project-index">02</div>
+            <div class="project-body">
+              <div class="status-tag">In progress</div>
+              <h3 class="project-title">AI Software Factory</h3>
+              <p class="project-desc">An agent orchestration system that takes a ticket through triage, implementation, testing, and pull request. Model routing sends each stage to the model best suited to it.</p>
+              <div class="tag-list">
+                <span class="tag">Python</span>
+                <span class="tag">Agent orchestration</span>
+                <span class="tag">Multi-model routing</span>
+              </div>
+            </div>
+            <div class="project-side">
+              <div class="side-block">
+                <span class="side-label">Role</span>
+                <span class="side-value">Solo build, team of one</span>
+              </div>
+              <div class="side-block">
+                <span class="side-label">Access</span>
+                <span class="side-value side-value--muted">Private repository, case study on request</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="project-card" data-reveal>
+          <div class="project-inner">
+            <span class="project-rule"></span>
+            <div class="project-index">03</div>
+            <div class="project-body">
+              <div class="status-tag">Deployed</div>
+              <h3 class="project-title">SettleUp</h3>
+              <p class="project-desc">A vertical SaaS billing engine that meters variable usage for Australian service businesses. Started at a hackathon with one teammate and still in active development.</p>
+              <div class="tag-list">
+                <span class="tag">Django</span>
+                <span class="tag">Django REST Framework</span>
+                <span class="tag">Railway</span>
+              </div>
+            </div>
+            <div class="project-side">
+              <div class="side-block">
+                <span class="side-label">Role</span>
+                <span class="side-value">Backend owner, team of two</span>
+              </div>
+              <div class="side-block">
+                <span class="side-label">Access</span>
+                <span class="side-value side-value--muted">Private repository, case study on request</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="project-card" data-reveal>
+          <div class="project-inner">
+            <span class="project-rule"></span>
+            <div class="project-index">04</div>
+            <div class="project-body">
+              <div class="status-tag">In planning</div>
+              <h3 class="project-title">Property Listing Automation</h3>
+              <p class="project-desc">A mobile system for Jakarta property agents covering listing intake through lead follow-up. The workflow is designed around a licensed AI video editor for listing media.</p>
+              <div class="tag-list">
+                <span class="tag">PRD</span>
+                <span class="tag">Workflow design</span>
+                <span class="tag">Mobile</span>
+              </div>
+            </div>
+            <div class="project-side">
+              <div class="side-block">
+                <span class="side-label">Role</span>
+                <span class="side-value">Product and systems design, team of one</span>
+              </div>
+              <div class="side-block">
+                <span class="side-label">Access</span>
+                <span class="side-value side-value--muted">Private repository, case study on request</span>
+              </div>
+            </div>
+          </div>
+        </article>
       </div>
-
-      <article class="project-card" data-reveal>
-        <div class="project-inner">
-          <span class="project-rule"></span>
-          <div class="project-index">01</div>
-          <div class="project-body">
-            <div class="status-tag status-tag--live">Live</div>
-            <h3 class="project-title">CAWC NSW Website Redesign</h3>
-            <p class="project-desc">Led the redesign of the Cambodian Australian Welfare Council of NSW site. It grew out of a seven-person Scrum project into a deployed CMS platform with a full solution architecture document.</p>
-            <div class="tag-list">
-              <span class="tag">Django 6</span>
-              <span class="tag">Wagtail CMS</span>
-              <span class="tag">PostgreSQL</span>
-              <span class="tag">Stripe Checkout</span>
-              <span class="tag">Docker</span>
-              <span class="tag">Railway</span>
-            </div>
-          </div>
-          <div class="project-side">
-            <div class="side-block">
-              <span class="side-label">Role</span>
-              <span class="side-value">Lead developer, team of seven</span>
-            </div>
-            <div class="side-block">
-              <span class="side-label">Links</span>
-              <a href="#" class="card-link">Live site</a>
-              <a href="#" class="card-link">Public repository</a>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="project-card" data-reveal>
-        <div class="project-inner">
-          <span class="project-rule"></span>
-          <div class="project-index">02</div>
-          <div class="project-body">
-            <div class="status-tag">In progress</div>
-            <h3 class="project-title">AI Software Factory</h3>
-            <p class="project-desc">An agent orchestration system that takes a ticket through triage, implementation, testing, and pull request. Model routing sends each stage to the model best suited to it.</p>
-            <div class="tag-list">
-              <span class="tag">Python</span>
-              <span class="tag">Agent orchestration</span>
-              <span class="tag">Multi-model routing</span>
-            </div>
-          </div>
-          <div class="project-side">
-            <div class="side-block">
-              <span class="side-label">Role</span>
-              <span class="side-value">Solo build, team of one</span>
-            </div>
-            <div class="side-block">
-              <span class="side-label">Access</span>
-              <span class="side-value side-value--muted">Private repository, case study on request</span>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="project-card" data-reveal>
-        <div class="project-inner">
-          <span class="project-rule"></span>
-          <div class="project-index">03</div>
-          <div class="project-body">
-            <div class="status-tag">Deployed</div>
-            <h3 class="project-title">SettleUp</h3>
-            <p class="project-desc">A vertical SaaS billing engine that meters variable usage for Australian service businesses. Started at a hackathon with one teammate and still in active development.</p>
-            <div class="tag-list">
-              <span class="tag">Django</span>
-              <span class="tag">Django REST Framework</span>
-              <span class="tag">Railway</span>
-            </div>
-          </div>
-          <div class="project-side">
-            <div class="side-block">
-              <span class="side-label">Role</span>
-              <span class="side-value">Backend owner, team of two</span>
-            </div>
-            <div class="side-block">
-              <span class="side-label">Access</span>
-              <span class="side-value side-value--muted">Private repository, case study on request</span>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="project-card" data-reveal>
-        <div class="project-inner">
-          <span class="project-rule"></span>
-          <div class="project-index">04</div>
-          <div class="project-body">
-            <div class="status-tag">In planning</div>
-            <h3 class="project-title">Property Listing Automation</h3>
-            <p class="project-desc">A mobile system for Jakarta property agents covering listing intake through lead follow-up. The workflow is designed around a licensed AI video editor for listing media.</p>
-            <div class="tag-list">
-              <span class="tag">PRD</span>
-              <span class="tag">Workflow design</span>
-              <span class="tag">Mobile</span>
-            </div>
-          </div>
-          <div class="project-side">
-            <div class="side-block">
-              <span class="side-label">Role</span>
-              <span class="side-value">Product and systems design, team of one</span>
-            </div>
-            <div class="side-block">
-              <span class="side-label">Access</span>
-              <span class="side-value side-value--muted">Private repository, case study on request</span>
-            </div>
-          </div>
-        </div>
-      </article>
     </section>
 
-    <section id="stack">
-      <h2 class="section-title">Stack</h2>
-      <div class="stack-grid" data-reveal>
-        <div class="stack-col">
-          <div class="stack-col-title">Backend</div>
-          <ul class="stack-list">
-            <li>Python</li><li>Django</li><li>Django REST Framework</li><li>Wagtail CMS</li><li>Stripe</li>
-          </ul>
-        </div>
-        <div class="stack-col">
-          <div class="stack-col-title">Data</div>
-          <ul class="stack-list">
-            <li>PostgreSQL</li><li>SQL and schema design</li><li>Redis</li><li>Data modelling</li>
-          </ul>
-        </div>
-        <div class="stack-col">
-          <div class="stack-col-title">AI and agents</div>
-          <ul class="stack-list">
-            <li>Agent orchestration</li><li>Multi-model routing</li><li>Prompt and tool design</li><li>Evaluation harnesses</li>
-          </ul>
-        </div>
-        <div class="stack-col">
-          <div class="stack-col-title">Infrastructure</div>
-          <ul class="stack-list">
-            <li>Docker</li><li>Railway</li><li>CI and CD pipelines</li><li>Solution architecture</li>
-          </ul>
+    <section id="stack" class="band--surface">
+      <div class="wrap">
+        <h2 class="section-title">Stack</h2>
+        <div class="stack-grid" data-reveal>
+          <div class="stack-col">
+            <div class="stack-col-title">Backend</div>
+            <ul class="stack-list">
+              <li>Python</li><li>Django</li><li>Django REST Framework</li><li>Wagtail CMS</li><li>Stripe</li>
+            </ul>
+          </div>
+          <div class="stack-col">
+            <div class="stack-col-title">Data</div>
+            <ul class="stack-list">
+              <li>PostgreSQL</li><li>SQL and schema design</li><li>Redis</li><li>Data modelling</li>
+            </ul>
+          </div>
+          <div class="stack-col">
+            <div class="stack-col-title">AI and agents</div>
+            <ul class="stack-list">
+              <li>Agent orchestration</li><li>Multi-model routing</li><li>Prompt and tool design</li><li>Evaluation harnesses</li>
+            </ul>
+          </div>
+          <div class="stack-col">
+            <div class="stack-col-title">Infrastructure</div>
+            <ul class="stack-list">
+              <li>Docker</li><li>Railway</li><li>CI and CD pipelines</li><li>Solution architecture</li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>
 
     <section id="about">
-      <h2 class="section-title">About</h2>
-      <div class="about-grid" data-reveal>
-        <div class="about-copy">
-          <p>I am in my final year of Computing Science (Honours) at UTS, majoring in Enterprise Software Development. Most of what I build is the part users never see: data models, billing logic, deployment pipelines, and the architecture documents that keep a team pointed the same way.</p>
-          <p>I work best on systems with real constraints and real users. I am looking for a tech internship where the backend matters and where I can be handed something load bearing.</p>
-        </div>
-        <div class="about-panel details">
-          <div class="panel-label">Details</div>
-          <dl>
-            <dt>Location</dt>
-            <dd>Sydney, Australia</dd>
-            <dt>Degree</dt>
-            <dd>Computing Science, Honours</dd>
-            <dt>Major</dt>
-            <dd>Enterprise Software Development</dd>
-            <dt>Graduation</dt>
-            <dd>May 2027</dd>
-            <dt>Seeking</dt>
-            <dd>Backend and platform internships</dd>
-          </dl>
+      <div class="wrap">
+        <h2 class="section-title">About</h2>
+        <div class="about-grid" data-reveal>
+          <div class="about-copy">
+            <p>I am in my final year of Computing Science (Honours) at UTS, majoring in Enterprise Software Development. Most of what I build is the part users never see: data models, billing logic, deployment pipelines, and the architecture documents that keep a team pointed the same way.</p>
+            <p>I work best on systems with real constraints and real users. I am looking for a tech internship where the backend matters and where I can be handed something load bearing.</p>
+          </div>
+          <div class="about-panel details">
+            <div class="panel-label">Details</div>
+            <dl>
+              <dt>Location</dt>
+              <dd>Sydney, Australia</dd>
+              <dt>Degree</dt>
+              <dd>Computing Science, Honours</dd>
+              <dt>Major</dt>
+              <dd>Enterprise Software Development</dd>
+              <dt>Graduation</dt>
+              <dd>May 2027</dd>
+              <dt>Seeking</dt>
+              <dd>Backend and platform internships</dd>
+            </dl>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="contact">
-      <div data-reveal>
-        <h2 class="contact-title">Open to internships from now through 2027.</h2>
-        <div class="contact-links">
-          <a href="mailto:jonathan.immanuel101@gmail.com" class="contact-link">jonathan.immanuel101@gmail.com</a>
-          <a href="https://github.com/jo-nuel" class="contact-link" target="_blank" rel="noopener">GitHub</a>
-          <a href="https://www.linkedin.com/in/jonathan-immanuel-6601702bb" class="contact-link" target="_blank" rel="noopener">LinkedIn</a>
-          <a href="Jonathan_Immanuel_Resume.pdf" class="contact-link" download>Resume (PDF)</a>
+    <section id="contact" class="band--deep">
+      <div class="wrap">
+        <div data-reveal>
+          <h2 class="contact-title">Open to internships from now through 2027.</h2>
+          <div class="contact-links">
+            <a href="mailto:jonathan.immanuel101@gmail.com" class="contact-link magnetic">jonathan.immanuel101@gmail.com</a>
+            <a href="https://github.com/jo-nuel" class="contact-link magnetic" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://www.linkedin.com/in/jonathan-immanuel-6601702bb" class="contact-link magnetic" target="_blank" rel="noopener">LinkedIn</a>
+            <a href="Jonathan_Immanuel_Resume.pdf" class="contact-link magnetic" download>Resume (PDF)</a>
+          </div>
         </div>
       </div>
     </section>
@@ -544,6 +601,11 @@
       <span class="footer-text">Last updated August 2026</span>
     </div>
   </footer>
+
+  <div class="live-status" id="liveStatus" aria-live="polite" hidden>
+    <span class="live-dot" aria-hidden="true"></span>
+    <span id="liveStatusText"></span>
+  </div>
 
 <script>
 (function () {
@@ -574,6 +636,99 @@
   }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
 
   items.forEach(function (el) { observer.observe(el); });
+})();
+
+// Ambient cursor glow — a soft light that follows the pointer on the dark background.
+(function () {
+  var glow = document.getElementById('cursorGlow');
+  if (!glow) return;
+  var supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!supportsHover || reduceMotion) return;
+
+  var raf = null;
+  window.addEventListener('mousemove', function (e) {
+    if (raf) return;
+    raf = requestAnimationFrame(function () {
+      glow.style.setProperty('--mx', e.clientX + 'px');
+      glow.style.setProperty('--my', e.clientY + 'px');
+      glow.classList.add('is-active');
+      raf = null;
+    });
+  }, { passive: true });
+  window.addEventListener('mouseleave', function () { glow.classList.remove('is-active'); });
+})();
+
+// Magnetic hover — small nav and link text nudges gently toward the cursor.
+(function () {
+  var supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!supportsHover || reduceMotion) return;
+
+  document.querySelectorAll('.magnetic').forEach(function (el) {
+    el.addEventListener('mousemove', function (e) {
+      var r = el.getBoundingClientRect();
+      var x = (e.clientX - r.left - r.width / 2) * 0.25;
+      var y = (e.clientY - r.top - r.height / 2) * 0.25;
+      el.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)';
+    });
+    el.addEventListener('mouseleave', function () { el.style.transform = ''; });
+  });
+})();
+
+// Live status — real activity pulled from the public GitHub API, not a decorative loop.
+(function () {
+  var el = document.getElementById('liveStatus');
+  var textEl = document.getElementById('liveStatusText');
+  var footer = document.querySelector('.site-footer');
+  if (!el || !textEl) return;
+
+  function relativeTime(iso) {
+    var mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    var hours = Math.round(mins / 60);
+    if (hours < 24) return hours + 'h ago';
+    var days = Math.round(hours / 24);
+    if (days < 30) return days + 'd ago';
+    return Math.round(days / 30) + 'mo ago';
+  }
+
+  function show(iso) {
+    textEl.textContent = 'Last shipped ' + relativeTime(iso);
+    el.hidden = false;
+  }
+
+  var CACHE_KEY = 'gh-activity-v1';
+  var CACHE_TTL = 5 * 60 * 1000;
+  var cached = null;
+  try {
+    var raw = sessionStorage.getItem(CACHE_KEY);
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (Date.now() - parsed.fetchedAt < CACHE_TTL) cached = parsed;
+    }
+  } catch (e) {}
+
+  if (cached) {
+    show(cached.iso);
+  } else {
+    fetch('https://api.github.com/users/jo-nuel/events/public')
+      .then(function (res) { if (!res.ok) throw new Error('bad status'); return res.json(); })
+      .then(function (events) {
+        var push = events.find(function (e) { return e.type === 'PushEvent'; });
+        if (!push) return;
+        try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ fetchedAt: Date.now(), iso: push.created_at })); } catch (e) {}
+        show(push.created_at);
+      })
+      .catch(function () { /* fail silently — no fake status */ });
+  }
+
+  if (footer && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) { el.classList.toggle('is-dimmed', entry.isIntersecting); });
+    }, { threshold: 0.1 }).observe(footer);
+  }
 })();
 </script>
 </body>
