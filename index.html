@@ -146,7 +146,6 @@
   }
 
   /* ---------- section bands ---------- */
-  .band--surface { background: var(--surface); }
   .band--deep { background: var(--bg-deep); }
 
   /* ---------- section heading ---------- */
@@ -164,8 +163,7 @@
   }
   section[id] { scroll-margin-top: 64px; }
   #work { padding: var(--space-section-first) 0 0; }
-  #stack { padding: var(--space-section) 0 var(--space-section); }
-  #about { padding: var(--space-section) 0 0; }
+  #stack, #about { padding: var(--space-section) 0 0; }
   #stack .section-title, #about .section-title { margin: 0 0 28px; }
   #contact { padding: var(--space-section) 0 var(--space-section); }
 
@@ -498,7 +496,7 @@
       </div>
     </section>
 
-    <section id="stack" class="band--surface">
+    <section id="stack">
       <div class="wrap">
         <h2 class="section-title">Stack</h2>
         <div class="stack-grid" data-reveal>
