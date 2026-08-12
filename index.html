@@ -226,6 +226,34 @@
   }
   .card-link:hover, .card-link:focus-visible { border-color: var(--accent); }
 
+  /* ---------- pipeline diagram ---------- */
+  .pipeline-wrap { margin-top: 28px; max-width: 480px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .pipeline { display: block; width: 100%; min-width: 460px; height: auto; overflow: visible; }
+  .pipeline-track { stroke: var(--line); stroke-width: 1.5; fill: none; }
+  .pipeline-progress {
+    stroke: var(--accent); stroke-width: 1.5; fill: none;
+    stroke-dasharray: 520; stroke-dashoffset: 520;
+  }
+  .pipeline-node circle { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+  .pipeline-node text {
+    font-family: var(--font-body); font-weight: 600; font-size: 13px;
+    letter-spacing: 0.06em; text-transform: uppercase; fill: var(--ink-muted);
+  }
+  .pipeline-wrap.is-playing .pipeline-progress { animation: drawProgress 1500ms cubic-bezier(.22,.61,.36,1) 200ms forwards; }
+  .pipeline-wrap.is-playing .pipeline-node[data-index="0"] circle { animation: litCircle 200ms ease 200ms forwards; }
+  .pipeline-wrap.is-playing .pipeline-node[data-index="0"] text { animation: litText 200ms ease 200ms forwards; }
+  .pipeline-wrap.is-playing .pipeline-node[data-index="1"] circle { animation: litCircle 200ms ease 570ms forwards; }
+  .pipeline-wrap.is-playing .pipeline-node[data-index="1"] text { animation: litText 200ms ease 570ms forwards; }
+  .pipeline-wrap.is-playing .pipeline-node[data-index="2"] circle { animation: litCircle 200ms ease 940ms forwards; }
+  .pipeline-wrap.is-playing .pipeline-node[data-index="2"] text { animation: litText 200ms ease 940ms forwards; }
+  .pipeline-wrap.is-playing .pipeline-node[data-index="3"] circle { animation: litCircle 200ms ease 1310ms forwards; }
+  .pipeline-wrap.is-playing .pipeline-node[data-index="3"] text { animation: litText 200ms ease 1310ms forwards; }
+  .pipeline-wrap.is-playing .pipeline-node[data-index="4"] circle { animation: litCircle 200ms ease 1680ms forwards; }
+  .pipeline-wrap.is-playing .pipeline-node[data-index="4"] text { animation: litText 200ms ease 1680ms forwards; }
+  @keyframes drawProgress { to { stroke-dashoffset: 0; } }
+  @keyframes litCircle { to { fill: var(--accent); stroke: var(--accent); } }
+  @keyframes litText { to { fill: var(--accent); } }
+
   /* ---------- stack ---------- */
   .stack-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -320,6 +348,9 @@
     .reveal { opacity: 1 !important; transform: none !important; }
     .wipe { transform: none !important; }
     .cursor-glow { display: none; }
+    .pipeline-progress { stroke-dashoffset: 0 !important; }
+    .pipeline-node circle { fill: var(--accent) !important; stroke: var(--accent) !important; }
+    .pipeline-node text { fill: var(--accent) !important; }
   }
 </style>
 </head>
@@ -346,7 +377,7 @@
 
     <section class="hero">
       <div class="wrap">
-        <div class="eyebrow">Sydney, Australia / Available for internships</div>
+        <div class="eyebrow">Sydney, Australia — <span id="localTime">10:00am</span> / Available for internships</div>
 
         <h1 class="hero-title">
           <span class="word"><span class="wipe">I&nbsp;</span></span><span class="word"><span class="wipe">build&nbsp;</span></span><span class="word"><span class="wipe">the&nbsp;</span></span><span class="word"><span class="wipe">systems&nbsp;</span></span><span class="word"><span class="wipe">businesses&nbsp;</span></span><span class="word"><span class="wipe accent">run&nbsp;</span></span><span class="word"><span class="wipe accent">on.</span></span>
@@ -425,6 +456,17 @@
                 <span class="tag">Python</span>
                 <span class="tag">Agent orchestration</span>
                 <span class="tag">Multi-model routing</span>
+              </div>
+              <div class="pipeline-wrap" data-diagram>
+                <svg class="pipeline" viewBox="0 0 640 62" role="img" aria-label="Diagram: a ticket moves through triage, build, test, and pull request stages" preserveAspectRatio="xMidYMid meet">
+                  <line class="pipeline-track" x1="60" y1="20" x2="580" y2="20"></line>
+                  <line class="pipeline-progress" x1="60" y1="20" x2="580" y2="20"></line>
+                  <g class="pipeline-node" data-index="0"><circle cx="60" cy="20" r="7"></circle><text x="60" y="49" text-anchor="middle">Ticket</text></g>
+                  <g class="pipeline-node" data-index="1"><circle cx="190" cy="20" r="7"></circle><text x="190" y="49" text-anchor="middle">Triage</text></g>
+                  <g class="pipeline-node" data-index="2"><circle cx="320" cy="20" r="7"></circle><text x="320" y="49" text-anchor="middle">Build</text></g>
+                  <g class="pipeline-node" data-index="3"><circle cx="450" cy="20" r="7"></circle><text x="450" y="49" text-anchor="middle">Test</text></g>
+                  <g class="pipeline-node" data-index="4"><circle cx="580" cy="20" r="7"></circle><text x="580" y="49" text-anchor="middle">PR open</text></g>
+                </svg>
               </div>
             </div>
             <div class="project-side">
@@ -646,6 +688,44 @@
   });
 })();
 
+// Pipeline diagram — plays once when scrolled into view; reduced-motion CSS already shows the lit final state.
+(function () {
+  var els = document.querySelectorAll('[data-diagram]');
+  if (!els.length) return;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion || !('IntersectionObserver' in window)) return;
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-playing');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  els.forEach(function (el) { observer.observe(el); });
+})();
+
+// Live local time in Sydney — a small, real, personal detail rather than a decorative clock.
+(function () {
+  var el = document.getElementById('localTime');
+  if (!el) return;
+
+  function update() {
+    var parts = new Intl.DateTimeFormat('en-AU', {
+      timeZone: 'Australia/Sydney', hour: 'numeric', minute: '2-digit', hour12: true
+    }).formatToParts(new Date());
+    var h, m, period;
+    parts.forEach(function (p) {
+      if (p.type === 'hour') h = p.value;
+      if (p.type === 'minute') m = p.value;
+      if (p.type === 'dayPeriod') period = p.value.toLowerCase();
+    });
+    el.textContent = h + ':' + m + period;
+  }
+  update();
+  setInterval(update, 30000);
+})();
 </script>
 </body>
 </html>
