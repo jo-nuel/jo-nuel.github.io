@@ -55,6 +55,66 @@
   }
   .cursor-glow.is-active { opacity: 1; }
 
+  /* ---------- film grain ---------- */
+  .grain {
+    position: fixed; inset: 0; z-index: 4; pointer-events: none;
+    opacity: 0.035; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
+  /* ---------- scroll progress ---------- */
+  .scroll-progress {
+    position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+    background: var(--accent); z-index: 60;
+    box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6);
+  }
+
+  /* ---------- custom cursor ---------- */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; z-index: 999; pointer-events: none;
+    border-radius: 50%; transform: translate(-50%, -50%);
+    opacity: 0; transition: opacity 300ms ease;
+  }
+  .cursor-dot { width: 6px; height: 6px; background: var(--accent); }
+  .cursor-ring {
+    width: 34px; height: 34px; border: 1px solid rgba(var(--accent-rgb), 0.5);
+    transition: opacity 300ms ease, width 220ms cubic-bezier(.22,.61,.36,1), height 220ms cubic-bezier(.22,.61,.36,1), border-color 220ms ease, background 220ms ease;
+  }
+  .cursor-dot.is-active, .cursor-ring.is-active { opacity: 1; }
+  .cursor-ring.is-hovering { width: 54px; height: 54px; border-color: var(--accent); background: rgba(var(--accent-rgb), 0.08); }
+  html.custom-cursor a, html.custom-cursor button, html.custom-cursor .magnetic { cursor: none; }
+  html.custom-cursor { cursor: none; }
+
+  /* ---------- back to top ---------- */
+  .to-top {
+    position: fixed; right: clamp(16px, 3vw, 32px); bottom: clamp(16px, 3vw, 32px); z-index: 40;
+    width: 46px; height: 46px; border-radius: 50%;
+    border: 1px solid var(--line); background: rgba(10, 10, 10, 0.7); backdrop-filter: blur(8px);
+    color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transform: translateY(12px) scale(0.9); pointer-events: none;
+    transition: opacity 300ms ease, transform 300ms cubic-bezier(.22,.61,.36,1), border-color 200ms ease, color 200ms ease;
+  }
+  .to-top.is-visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+  .to-top:hover, .to-top:focus-visible { border-color: var(--accent); color: var(--accent); }
+
+  /* ---------- marquee ---------- */
+  .marquee {
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    overflow: hidden; position: relative;
+  }
+  .marquee-track { display: flex; width: max-content; animation: marqueeScroll 32s linear infinite; }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+  .marquee-item {
+    font-family: var(--font-body); font-weight: 600;
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-muted);
+    padding: 18px clamp(18px, 2.6vw, 32px); white-space: nowrap;
+    display: flex; align-items: center; gap: clamp(18px, 2.6vw, 32px);
+  }
+  .marquee-item::after { content: '—'; color: var(--accent); }
+  @keyframes marqueeScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
   /* ---------- layout ---------- */
   .wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); position: relative; z-index: 2; }
 
@@ -168,12 +228,21 @@
   .project-card {
     border-bottom: 1px solid var(--line);
     transition: background 400ms ease;
+    position: relative; perspective: 1200px;
   }
   .project-card:hover, .project-card:focus-within { background: var(--surface); }
+  .project-card::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(280px circle at var(--cx, 50%) var(--cy, 50%), rgba(var(--accent-rgb), 0.08), transparent 70%);
+    opacity: 0; transition: opacity 300ms ease;
+  }
+  .project-card:hover::before, .project-card:focus-within::before { opacity: 1; }
   .project-inner {
     display: flex; gap: clamp(18px, 3vw, 48px);
     padding: clamp(32px, 4vw, 52px) clamp(16px, 2vw, 28px);
     position: relative; flex-wrap: wrap;
+    transition: transform 200ms cubic-bezier(.22,.61,.36,1);
+    transform-style: preserve-3d;
   }
   .project-rule {
     position: absolute; left: 0;
@@ -217,11 +286,15 @@
   .side-value--muted { color: var(--ink-muted); font-weight: 400; line-height: 1.6; }
   .card-link {
     font-size: 14px; font-weight: 500; color: var(--ink); width: fit-content;
-    border-bottom: 1px solid var(--line); padding-bottom: 2px;
+    padding-bottom: 2px; position: relative;
     display: inline-block;
-    transition: border-color 200ms ease, transform 150ms ease;
   }
-  .card-link:hover, .card-link:focus-visible { border-color: var(--accent); }
+  .card-link::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--line); }
+  .card-link::after {
+    content: ''; position: absolute; left: 0; bottom: 0; height: 1px; width: 100%; background: var(--accent);
+    transform: scaleX(0); transform-origin: left; transition: transform 320ms cubic-bezier(.22,.61,.36,1);
+  }
+  .card-link:hover::after, .card-link:focus-visible::after { transform: scaleX(1); }
 
   /* ---------- pipeline diagram ---------- */
   .pipeline-wrap { margin-top: 28px; max-width: 480px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -306,11 +379,15 @@
     margin-top: clamp(36px, 5vw, 56px); padding-top: 28px; border-top: 1px solid var(--line);
   }
   .contact-link {
-    font-size: 15px; font-weight: 500; color: var(--ink); border-bottom: 1px solid var(--line); padding-bottom: 3px;
-    display: inline-block;
-    transition: border-color 200ms ease, transform 150ms ease;
+    font-size: 15px; font-weight: 500; color: var(--ink); padding-bottom: 3px;
+    display: inline-block; position: relative;
   }
-  .contact-link:hover, .contact-link:focus-visible { border-color: var(--accent); }
+  .contact-link::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--line); }
+  .contact-link::after {
+    content: ''; position: absolute; left: 0; bottom: 0; height: 1px; width: 100%; background: var(--accent);
+    transform: scaleX(0); transform-origin: left; transition: transform 320ms cubic-bezier(.22,.61,.36,1);
+  }
+  .contact-link:hover::after, .contact-link:focus-visible::after { transform: scaleX(1); }
 
   /* ---------- footer ---------- */
   .site-footer { background: var(--bg-deep); border-top: 1px solid var(--line); }
@@ -336,24 +413,33 @@
 
   @media (hover: none), (pointer: coarse) {
     .cursor-glow { display: none; }
+    .cursor-dot, .cursor-ring { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after { animation: none !important; transition: none !important; }
     .project-card:hover .project-title, .project-card:focus-within .project-title { transform: none !important; }
+    .project-inner { transform: none !important; }
     .reveal { opacity: 1 !important; transform: none !important; }
     .wipe { transform: none !important; }
     .cursor-glow { display: none; }
+    .cursor-dot, .cursor-ring { display: none; }
+    html.custom-cursor, html.custom-cursor a, html.custom-cursor button, html.custom-cursor .magnetic { cursor: auto; }
     .pipeline-progress { stroke-dashoffset: 0 !important; }
     .pipeline-node circle { fill: var(--accent) !important; stroke: var(--accent) !important; }
     .pipeline-node text { fill: var(--accent) !important; }
+    .marquee-track { animation: none !important; }
   }
 </style>
 </head>
 <body>
 
+  <div class="grain" aria-hidden="true"></div>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
   <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+  <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+  <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
 
   <header class="site-header">
     <div class="wrap">
@@ -402,6 +488,21 @@
         </div>
       </div>
     </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span class="marquee-item">Backend Systems</span>
+        <span class="marquee-item">Agent Orchestration</span>
+        <span class="marquee-item">Billing Engines</span>
+        <span class="marquee-item">Django &amp; PostgreSQL</span>
+        <span class="marquee-item">Solution Architecture</span>
+        <span class="marquee-item">Backend Systems</span>
+        <span class="marquee-item">Agent Orchestration</span>
+        <span class="marquee-item">Billing Engines</span>
+        <span class="marquee-item">Django &amp; PostgreSQL</span>
+        <span class="marquee-item">Solution Architecture</span>
+      </div>
+    </div>
 
     <section id="work">
       <div class="wrap">
@@ -538,26 +639,26 @@
     <section id="stack">
       <div class="wrap">
         <h2 class="section-title">Stack</h2>
-        <div class="stack-grid" data-reveal>
-          <div class="stack-col">
+        <div class="stack-grid">
+          <div class="stack-col" data-reveal>
             <div class="stack-col-title">Backend</div>
             <ul class="stack-list">
               <li>Python</li><li>Django</li><li>Django REST Framework</li><li>Wagtail CMS</li><li>Stripe</li>
             </ul>
           </div>
-          <div class="stack-col">
+          <div class="stack-col" data-reveal>
             <div class="stack-col-title">Data</div>
             <ul class="stack-list">
               <li>PostgreSQL</li><li>SQL and schema design</li><li>Redis</li><li>Data modelling</li>
             </ul>
           </div>
-          <div class="stack-col">
+          <div class="stack-col" data-reveal>
             <div class="stack-col-title">AI and agents</div>
             <ul class="stack-list">
               <li>Agent orchestration</li><li>Multi-model routing</li><li>Prompt and tool design</li><li>Evaluation harnesses</li>
             </ul>
           </div>
-          <div class="stack-col">
+          <div class="stack-col" data-reveal>
             <div class="stack-col-title">Infrastructure</div>
             <ul class="stack-list">
               <li>Docker</li><li>Railway</li><li>CI and CD pipelines</li><li>Solution architecture</li>
@@ -570,12 +671,12 @@
     <section id="about">
       <div class="wrap">
         <h2 class="section-title">About</h2>
-        <div class="about-grid" data-reveal>
-          <div class="about-copy">
+        <div class="about-grid">
+          <div class="about-copy" data-reveal>
             <p>I am in my final year of Computing Science (Honours) at UTS, majoring in Enterprise Software Development. Most of what I build is the part users never see: data models, billing logic, deployment pipelines, and the architecture documents that keep a team pointed the same way.</p>
             <p>I work best on systems with real constraints and real users. I am looking for a tech internship where the backend matters and where I can be handed something load bearing.</p>
           </div>
-          <div class="about-panel details">
+          <div class="about-panel details" data-reveal>
             <div class="panel-label">Details</div>
             <dl>
               <dt>Location</dt>
@@ -615,6 +716,8 @@
       <span class="footer-text">Last updated August 2026</span>
     </div>
   </footer>
+
+  <button class="to-top magnetic" id="toTop" aria-label="Back to top">↑</button>
 
 <script>
 (function () {
@@ -722,6 +825,138 @@
   }
   update();
   setInterval(update, 30000);
+})();
+
+// Scroll progress — thin accent bar tracking read position down the page.
+(function () {
+  var bar = document.getElementById('scrollProgress');
+  if (!bar) return;
+  var ticking = false;
+  function update() {
+    var doc = document.documentElement;
+    var scrollable = doc.scrollHeight - doc.clientHeight;
+    var pct = scrollable > 0 ? (doc.scrollTop / scrollable) * 100 : 0;
+    bar.style.width = pct + '%';
+    ticking = false;
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) { requestAnimationFrame(update); ticking = true; }
+  }, { passive: true });
+  update();
+})();
+
+// Custom cursor — a precise dot plus a trailing ring that expands over interactive elements.
+(function () {
+  var dot = document.getElementById('cursorDot');
+  var ring = document.getElementById('cursorRing');
+  if (!dot || !ring) return;
+  var supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!supportsHover || reduceMotion) return;
+
+  document.documentElement.classList.add('custom-cursor');
+  var mx = 0, my = 0, rx = 0, ry = 0, active = false;
+
+  window.addEventListener('mousemove', function (e) {
+    mx = e.clientX; my = e.clientY;
+    dot.style.transform = 'translate(' + mx + 'px,' + my + 'px) translate(-50%,-50%)';
+    if (!active) {
+      active = true;
+      dot.classList.add('is-active');
+      ring.classList.add('is-active');
+    }
+  }, { passive: true });
+
+  window.addEventListener('mouseleave', function () {
+    active = false;
+    dot.classList.remove('is-active');
+    ring.classList.remove('is-active');
+  });
+
+  function loop() {
+    rx += (mx - rx) * 0.18;
+    ry += (my - ry) * 0.18;
+    ring.style.transform = 'translate(' + rx + 'px,' + ry + 'px) translate(-50%,-50%)';
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  var hoverTargets = 'a, button, .magnetic, .project-card, input, textarea, select';
+  document.addEventListener('mouseover', function (e) {
+    if (e.target.closest(hoverTargets)) ring.classList.add('is-hovering');
+  });
+  document.addEventListener('mouseout', function (e) {
+    if (e.target.closest(hoverTargets)) ring.classList.remove('is-hovering');
+  });
+})();
+
+// Project card tilt — subtle 3D tilt and spotlight that track the pointer within each card.
+(function () {
+  var cards = document.querySelectorAll('.project-card');
+  if (!cards.length) return;
+  var supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!supportsHover || reduceMotion) return;
+
+  cards.forEach(function (card) {
+    var inner = card.querySelector('.project-inner');
+    if (!inner) return;
+    card.addEventListener('mousemove', function (e) {
+      var r = card.getBoundingClientRect();
+      var px = (e.clientX - r.left) / r.width;
+      var py = (e.clientY - r.top) / r.height;
+      card.style.setProperty('--cx', (px * 100) + '%');
+      card.style.setProperty('--cy', (py * 100) + '%');
+      var rotateY = (px - 0.5) * 4;
+      var rotateX = (0.5 - py) * 4;
+      inner.style.transform = 'rotateX(' + rotateX.toFixed(2) + 'deg) rotateY(' + rotateY.toFixed(2) + 'deg)';
+    });
+    card.addEventListener('mouseleave', function () {
+      inner.style.transform = '';
+      card.style.removeProperty('--cx');
+      card.style.removeProperty('--cy');
+    });
+  });
+})();
+
+// Back to top — appears once the hero has scrolled past, scrolls smoothly back to the top.
+(function () {
+  var btn = document.getElementById('toTop');
+  if (!btn) return;
+  var ticking = false;
+  function update() {
+    if (window.scrollY > window.innerHeight * 0.6) btn.classList.add('is-visible');
+    else btn.classList.remove('is-visible');
+    ticking = false;
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) { requestAnimationFrame(update); ticking = true; }
+  }, { passive: true });
+  update();
+  btn.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+
+// Hero parallax — the hero content drifts and fades slightly as it scrolls out of view.
+(function () {
+  var hero = document.querySelector('.hero');
+  var content = document.querySelector('.hero .wrap');
+  if (!hero || !content) return;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) return;
+
+  var ticking = false;
+  function update() {
+    var progress = Math.min(window.scrollY / hero.offsetHeight, 1);
+    content.style.transform = 'translateY(' + (progress * 40).toFixed(1) + 'px)';
+    content.style.opacity = String(1 - progress * 0.6);
+    ticking = false;
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) { requestAnimationFrame(update); ticking = true; }
+  }, { passive: true });
+  update();
 })();
 </script>
 </body>
